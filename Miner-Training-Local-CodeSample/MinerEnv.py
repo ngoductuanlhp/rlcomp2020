@@ -40,7 +40,7 @@ class MinerEnv:
             import traceback
             traceback.print_exc()
 
-    # Functions are customized by client
+    ''' CUSTOMIZE STATE '''
     def get_state(self):
         # Building the map
         view = np.zeros([self.state.mapInfo.max_x + 1, self.state.mapInfo.max_y + 1], dtype=int)
@@ -72,6 +72,7 @@ class MinerEnv:
 
         return DQNState
 
+    ''' CUSTOMIZE REWARD '''
     def get_reward(self):
         # Calculate reward
         reward = 0
@@ -80,7 +81,11 @@ class MinerEnv:
         if score_action > 0:
             #If the DQN agent crafts golds, then it should obtain a positive reward (equal score_action)
             reward += score_action
-            
+
+        reward += 0.01 * self.state.mapInfo.gold_amount(self.state.x, self.state.y)
+        reward += 0.2 * self.state.mapInfo.is_row_has_gold(self.state.y)
+        reward += 0.2 * self.state.mapInfo.is_row_has_gold(self.state.x)
+
         #If the DQN agent crashs into obstacels (Tree, Trap, Swamp), then it should be punished by a negative reward
         if self.state.mapInfo.get_obstacle(self.state.x, self.state.y) == TreeID:  # Tree
             reward -= TreeID
@@ -89,11 +94,11 @@ class MinerEnv:
         if self.state.mapInfo.get_obstacle(self.state.x, self.state.y) == SwampID:  # Swamp
             reward -= SwampID
 
-        # If out of the map, then the DQN agent should be punished by a larger nagative reward.
+        # If out of the map, then the DQN agent should be punished by a larger negative reward.
         if self.state.status == State.STATUS_ELIMINATED_WENT_OUT_MAP:
             reward += -10
             
-        #Run out of energy, then the DQN agent should be punished by a larger nagative reward.
+        #Run out of energy, then the DQN agent should be punished by a larger negative reward.
         if self.state.status == State.STATUS_ELIMINATED_OUT_OF_ENERGY:
             reward += -10
         # print ("reward",reward)

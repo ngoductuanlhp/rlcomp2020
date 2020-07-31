@@ -76,6 +76,10 @@ class DQN:
       else:
         a_chosen = a_max      
       return a_chosen
+
+    def DQN_predict(self,state):
+      #Get the index of the maximum Q values      
+      return self.model.predict(state.reshape(1,len(state)))
     
     
     def replay(self,samples,batch_size):

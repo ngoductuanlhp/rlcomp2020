@@ -40,12 +40,13 @@ memory = Memory(MEMORY_SIZE)
 # Initialize environment
 minerEnv = MinerEnv(HOST, PORT) #Creating a communication environment between the DQN model and the game environment (GAME_SOCKET_DUMMY.py)
 minerEnv.start()  # Connect to the game
-
+print("Start training")
 train = False #The variable is used to indicate that the replay starts, and the epsilon starts decrease.
 #Training Process
 #the main part of the deep-q learning agorithm 
 for episode_i in range(0, N_EPISODE):
     try:
+        ''' Initialize map and position '''
         # Choosing a map in the list
         mapID = np.random.randint(1, 6) #Choosing a map ID from 5 maps in Maps folder randomly
         posID_x = np.random.randint(MAP_MAX_X) #Choosing a initial position of the DQN agent on X-axes randomly
@@ -62,11 +63,19 @@ for episode_i in range(0, N_EPISODE):
         total_reward = 0 #The amount of rewards for the entire episode
         terminate = False #The variable indicates that the episode ends
         maxStep = minerEnv.state.mapInfo.maxStep #Get the maximum number of steps for each episode in training
-        #Start an episde for training
+        print("\tMap %d\n\tMax step: %d" % (mapID, maxStep))
+        
+        ''' Run full map '''
         for step in range(0, maxStep):
-            action = DQNAgent.act(s)  # Getting an action from the DQN model from the state (s)
-            minerEnv.step(str(action))  # Performing the action in order to obtain the new state
+            ''' Get action from current state '''
+            action = DQNAgent.act(s)
+
+            ''' Send action to server and wait for update new state '''
+            minerEnv.step(str(action))
+
+            ''' Modify state '''
             s_next = minerEnv.get_state()  # Getting a new state
+            ''' Get reward '''
             reward = minerEnv.get_reward()  # Getting a reward
             terminate = minerEnv.check_terminate()  # Checking the end status of the episode
 
